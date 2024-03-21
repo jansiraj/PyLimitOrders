@@ -20,7 +20,7 @@ class LimitOrderAgent(PriceListener):
 
     def on_price_tick(self, product_id: str, price: float):
         # see PriceListener protocol and readme file
-        """override on_price_tick from Execution client and calculate current
+        """override on_price_tick from PriceListener and calculate current
         market price of product and checks whether target reached market price"""
         if product_id == 'IBM' and price < 100:
             self.execution_client.buy('IBM', 1000)
