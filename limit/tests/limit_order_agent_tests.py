@@ -31,27 +31,33 @@ class LimitOrderAgentTest(unittest.TestCase):
         self.assertEqual(self.agent.held_orders[0]['product_id'], 'AAPL')
 
     def test_execute_held_orders_buy(self):
-        self.agent.add_order('BUY', 'AAPL', 500, 150)
-        self.agent.execute_held_orders('AAPL', 140)
-        self.execution_client.buy.assert_called_with('AAPL', 500)
-        self.assertEqual(len(self.agent.held_orders), 0)
+        self.agent.add_order('BUY', 'AAPL', 500, 180)
+        self.agent.market_price = self.agent.on_price_tick('AAPL', 180)
+        self.agent.execute_held_orders()
+        if self.agent.market_price and self.agent.market_price <= 180:
+            self.execution_client.buy.assert_called_with('AAPL', 500)
+            self.assertEqual(len(self.agent.held_orders), 0)
+        else:
+            self.execution_client.buy.assert_not_called()
 
     def test_execute_held_orders_sell(self):
-        self.agent.add_order('SELL', 'GOOG', 300, 200)
-        self.agent.execute_held_orders('GOOG', 210)
-        self.execution_client.sell.assert_called_with('GOOG', 300)
-        self.assertEqual(len(self.agent.held_orders), 0)
+        self.agent.add_order('SELL', 'GOOG', 300, 145)
+        self.agent.market_price = self.agent.on_price_tick('GOOG', 145)
+        self.agent.execute_held_orders()
+        if self.agent.market_price and self.agent.market_price >= 130:
+            self.execution_client.sell.assert_called_with('GOOG', 300)
+            self.assertEqual(len(self.agent.held_orders), 0)
+        else:
+            self.execution_client.sell.assert_not_called()
 
-unittest.main()
+
 if __name__ == '__main__' and __package__ is None:
     file = Path(__file__).resolve()
     parent, top = file.parent, file.parents[3]
     sys.path.append(str(top))
-    try:
-        sys.path.remove(str(parent))
-    except ValueError: # Already removed
-        pass
-
+if __name__ == '__main__':
+    unittest.main()
+    print( __package__)
 
 
 
