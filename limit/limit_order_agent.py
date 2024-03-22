@@ -37,6 +37,7 @@ class LimitOrderAgent(PriceListener):
         self.held_orders.append(order)
 
     def execute_held_orders(self):
+        #can run this function on any timely basis
         executed_orders = []
         for order in self.held_orders:
             try:

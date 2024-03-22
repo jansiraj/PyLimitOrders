@@ -21,7 +21,7 @@ class LimitOrderAgentTest(unittest.TestCase):
         self.agent.market_price = self.agent.on_price_tick(self.agent.product_id, self.agent.limit)
         print(self.agent.market_price)
         self.agent.execute_held_orders()
-        if self.agent.market_price and self.agent.market_price <= 180:
+        if self.agent.market_price and self.agent.market_price <= self.agent.limit:
             self.execution_client.buy.assert_called_with(self.agent.product_id, self.agent.amount)
             print("Bought the product {}".format(self.agent.product_id))
             self.assertEqual(len(self.agent.held_orders), 0)
@@ -36,7 +36,7 @@ class LimitOrderAgentTest(unittest.TestCase):
         self.agent.market_price = self.agent.on_price_tick(self.agent.product_id, self.agent.limit)
         print(self.agent.market_price)
         self.agent.execute_held_orders()
-        if self.agent.market_price and self.agent.market_price >= 130:
+        if self.agent.market_price and self.agent.market_price >= self.agent.limit:
             self.execution_client.sell.assert_called_with(self.agent.product_id, self.agent.amount)
             print("Sold the product {}".format(self.agent.product_id))
             self.assertEqual(len(self.agent.held_orders), 0)
