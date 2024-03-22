@@ -1,7 +1,5 @@
 import logging
 
-import yfinance as yf
-
 from trading_framework.execution_client import ExecutionClient, ExecutionException
 from trading_framework.price_listener import PriceListener
 
@@ -22,14 +20,10 @@ class LimitOrderAgent(PriceListener):
         # see PriceListener protocol and readme file
         """override on_price_tick from PriceListener and calculate current
         market price of product and checks whether target reached market price"""
-        if product_id == 'IBM' and price < 100:
-            self.execution_client.buy('IBM', 1000)
         try:
-            ticker = yf.Ticker(product_id)
-            data = ticker.history(period="1d")
-            market_price = data['Close'].iloc[-1]  # Assuming 'Close' price represents the current market price
+            # We will get market price using any third party APIS.Now statically assign price as market price
+            market_price = price
             logging.info(f"Current market price of {product_id}: {market_price}")
-
             if market_price >= price:
                 logging.info("Target price reached or exceeded!")
             else:
@@ -50,16 +44,14 @@ class LimitOrderAgent(PriceListener):
                 if market_price:
                     if order['action'] == "BUY" and market_price <= order['limit']:
                         self.execution_client.buy(order['product_id'], order['amount'])
-                        logging.info('Bought order of product {} for {} amount'.format(order['product_id'], order['amount']))
+                        logging.info('Bought order of product {}'.format(order['product_id']))
                         executed_orders.append(order)
                     elif order['action'] == "SELL" and market_price >= order['limit']:
                         self.execution_client.sell(order['product_id'], order['amount'])
-                        logging.info('Sold order of product {} for {} amount'.format(order['product_id'], order['amount']))
+                        logging.info('Sold order of product {}'.format(order['product_id']))
                         executed_orders.append(order)
             except ExecutionException as e:
-                logging.warning('{} Order failed for product {} and amount {}'.format(order['action'],
-                                                                                      order['product_id'],
-                                                                                      order['amount']))
+                logging.warning('{} Order failed for product {}'.format(order['action'], order['product_id']))
                 logging.warning('Fail reason: {}'.format(e))
         for order in executed_orders:
             self.held_orders.remove(order)
